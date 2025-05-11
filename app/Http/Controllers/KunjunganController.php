@@ -71,18 +71,15 @@ class KunjunganController extends Controller
             'no_hp' => 'required|string|max:15',
             'usia_id' => 'required|string',
             'jenis_kelamin_id' => 'required|string',
-            'asal_instansi' => 'required|string|max:255',
+            'asal_instansi' => 'required|string|max:100|regex:/^[a-zA-Z0-9\s]+$/',
             'pekerjaan_id' => 'required|string',
             'kategori_informasi_id' => 'required|string',
             'pilihan_pertanian_id' => 'nullable|string',
             'pendidikan_id' => 'required|string',
             'jenis_pengunjung_id' => 'required|string',
             'jumlah_orang' => 'nullable|integer|min:2',
-            'tanggal_kunjungan' => [
-                'required',
-                'date',
-            ],
-            'tujuan_kunjungan' => 'required|string',
+            'tanggal_kunjungan' => 'required|date',
+            'tujuan_kunjungan' => 'required|string|max:250',
             'url_foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:10240',
             'url_foto_selfie' => 'required|image|mimes:jpeg,png,jpg|max:10240',
         ], [
@@ -142,11 +139,11 @@ class KunjunganController extends Controller
         
         // Periksa apakah data berhasil disimpan
         if ($kunjungan) {
-            // Ambil semua email user
-            $users = User::pluck('email');
-    
-            // Kirim email ke semua user
-            foreach ($users as $email) {
+            // Ambil email user yang rolenya admin
+            $adminUsers = User::where('role', 'admin')->pluck('email');
+        
+            // Kirim email hanya ke admin
+            foreach ($adminUsers as $email) {
                 Mail::to($email)->send(new KunjunganDiterima($kunjungan));
             }
             return redirect()->back()->with('success', 'Permohonan kunjungan Anda telah berhasil dikirim. Mohon menunggu, informasi selanjutnya akan kami kirimkan melalui WhatsApps! Terimakasih.');
