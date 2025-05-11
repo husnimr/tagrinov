@@ -38,8 +38,8 @@
                         <td>{{ $i + 1 }}</td>
                         <td>{{ $item->nama_lengkap }}</td>
                         <td>{{ $item->asal_instansi }}</td>
-                        <td>{{ $item->jenis_pengunjung->nama }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tanggal_kunjungan)->locale('id')->translatedFormat('l, d F Y') }}</td>
+                        <td>{{ $item->jenis_pengunjung->nama }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->deleted_at)->locale('id')->setTimezone('Asia/Jakarta')->translatedFormat('j F Y H:i') }}</td>
                         <td class="d-flex gap-1">
                             {{-- Tombol Pulihkan (trigger modal) --}}

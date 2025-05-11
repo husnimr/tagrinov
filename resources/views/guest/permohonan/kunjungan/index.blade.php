@@ -77,25 +77,44 @@
 
 <div class="container">
     <h3>Rencanakan Kunjunganmu</h3>
+
     @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    confirmButtonColor: '#3085d6',
+                });
+            });
+        </script>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: '{{ session('error') }}',
+                    confirmButtonColor: '#d33',
+                });
+            });
+        </script>
     @endif
+
     @if($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal!',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonColor: '#d33',
+                });
+            });
+        </script>
     @endif
     <form action="{{ route('kunjungan.store') }}" method="POST" id="form-kunjungan" enctype="multipart/form-data">
         @csrf
@@ -148,7 +167,10 @@
         <!-- Asal Instansi -->
         <div class="mb-3">
             <label for="asal_instansi" class="form-label">Asal Instansi</label>
-            <input type="text" class="form-control" id="asal_instansi" name="asal_instansi" value="{{ old('asal_instansi') }}" placeholder="Masukkan asal instansi" required>
+            <input type="text" class="form-control" id="asal_instansi" name="asal_instansi" 
+                value="{{ old('asal_instansi') }}" maxlength="100" 
+                placeholder="Masukkan asal instansi" required>
+            <div id="asal_instansi_error" class="invalid-feedback" style="display:none;"></div>
         </div>
 
         <!-- Pekerjaan -->
@@ -214,11 +236,13 @@
             </div>
 
             <!-- Input untuk jumlah orang, muncul hanya jika Perkelompok dipilih -->
-            <div id="jumlah_orang" class="mb-3" style="display:none;">
+            <div id="jumlah_orang" class="mb-3" style="display:block;">
                 <label for="jumlah" class="form-label">Jumlah Orang</label>
-                <input type="number" class="form-control" id="jumlah_orang" name="jumlah_orang" min="1" 
+                <input type="number" class="form-control" id="jumlah_orang_input" name="jumlah_orang" min="1" maxlength="2" max="50"
                     placeholder="Masukkan Jumlah Orang" value="{{ old('jumlah_orang') }}">
+                <div id="jumlah_orang_error" class="invalid-feedback" style="display:none;"></div>
             </div>
+            
         </div>
 
 
@@ -235,7 +259,13 @@
         <!-- Tujuan Kunjungan -->
         <div class="mb-3">
             <label for="tujuan_kunjungan" class="form-label">Tujuan Kunjungan</label>
-            <textarea class="form-control" id="tujuan_kunjungan" name="tujuan_kunjungan" rows="3" placeholder="Tulis Tujuan Kunjungan" required>{{ old('tujuan_kunjungan') }}</textarea>
+            <textarea class="form-control" id="tujuan_kunjungan" name="tujuan_kunjungan" rows="4" 
+                placeholder="Tulis Tujuan Kunjungan" maxlength="250" oninput="updateCharCount()" required>{{ old('tujuan_kunjungan') }}</textarea>
+            <small id="charCount" class="text-muted">Sisa karakter: 250</small>
+
+            @error('tujuan_kunjungan')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <!-- Unggah Foto KTP -->
@@ -246,6 +276,7 @@
             @error('url_foto_ktp')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
+            <div class="invalid-feedback" id="error_ktp" style="display:none;"></div>
         </div>
         
         <!-- Unggah Foto Selfie -->
@@ -256,6 +287,7 @@
             @error('url_foto_selfie')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
+            <div class="invalid-feedback" id="error_selfie" style="display:none;"></div>
         </div>
 
         <!-- Tombol Submit -->
@@ -264,6 +296,7 @@
         </div>
     </form>
 
+    {{-- Nomor HP --}}
     <script>
         const form = document.getElementById('form-kunjungan');
         const inputNoHp = document.getElementById('no_hp');
@@ -300,7 +333,7 @@
             // Jika baru 1 digit
             if (val.length === 1) {
                 if (val !== '0') {
-                    showError('Nomor hp harus diawali 08');
+                    showError('Nomor HP harus diawali 08');
                 } else {
                     clearError(); // 0 masih valid, jangan error
                 }
@@ -309,7 +342,7 @@
     
             // Jika lebih dari 1 digit tapi bukan 08
             if (!val.startsWith('08')) {
-                showError('Nomor hp harus diawali 08');
+                showError('Nomor HP harus diawali 08');
             } else {
                 clearError();
             }
@@ -324,12 +357,12 @@
             }
     
             if (!val.startsWith('08')) {
-                showError('Nomor hp harus diawali 08');
+                showError('Nomor HP harus diawali 08');
                 return;
             }
     
             if (val.length < 11) {
-                showError('Nomor hp minimal 11 angka');
+                showError('Nomor HP tidak sesuai format');
             } else {
                 clearError();
             }
@@ -350,13 +383,188 @@
                 if (val === '') {
                     clearError(); // biarkan HTML5 required jalan
                 } else if (!val.startsWith('08')) {
-                    showError('Nomor hp harus diawali 08');
+                    showError('Nomor HP harus diawali 08');
                 } else if (val.length < 11) {
-                    showError('Nomor hp minimal 11 angka');
+                    showError('Nomor HP tidak sesuai format');
                 }
             }
         });
     </script>
+
+    {{-- Asal instansi --}}
+    <script>
+        const inputInstansi = document.getElementById('asal_instansi');
+        const errorInstansi = document.getElementById('asal_instansi_error');
+    
+        function showInstansiError(message) {
+            errorInstansi.textContent = message;
+            errorInstansi.style.display = 'block';
+            inputInstansi.classList.add('is-invalid');
+        }
+    
+        function clearInstansiError() {
+            errorInstansi.textContent = '';
+            errorInstansi.style.display = 'none';
+            inputInstansi.classList.remove('is-invalid');
+        }
+    
+        inputInstansi.addEventListener('input', function () {
+            // Hanya huruf, angka, dan spasi
+            this.value = this.value.replace(/[^a-zA-Z0-9\s]/g, '');
+    
+            // Jika mentok 100 karakter
+            if (this.value.length >= 100) {
+                showInstansiError('Nama Instansi maksimal 100 karakter.');
+            } else {
+                clearInstansiError();
+            }
+        });
+    
+        inputInstansi.addEventListener('blur', function () {
+            // Bersihkan error saat input tidak fokus
+            if (this.value.length < 100) {
+                clearInstansiError();
+            }
+        });
+    </script>
+    
+    {{-- Jumlah orang --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const jumlahInput = document.getElementById('jumlah_orang_input');
+            const jumlahError = document.getElementById('jumlah_orang_error');
+            const form = document.getElementById('form-kunjungan');
+    
+            function showJumlahError(message) {
+                jumlahError.textContent = message;
+                jumlahError.style.display = 'block';
+                jumlahInput.classList.add('is-invalid');
+            }
+    
+            function clearJumlahError() {
+                jumlahError.textContent = '';
+                jumlahError.style.display = 'none';
+                jumlahInput.classList.remove('is-invalid');
+            }
+    
+            jumlahInput.addEventListener('input', function () {
+                // Batasi hanya 2 digit angka
+                if (this.value.length > 2) {
+                    this.value = this.value.slice(0, 2);
+                }
+    
+                const val = parseInt(this.value);
+    
+                if (val > 50) {
+                    showJumlahError('Jumlah orang maksimal 50.');
+                } else {
+                    clearJumlahError();
+                }
+            });
+    
+            form.addEventListener('submit', function (e) {
+                const val = parseInt(jumlahInput.value);
+    
+                if (isNaN(val) || val < 1 || val > 50) {
+                    e.preventDefault();
+                    showJumlahError('Jumlah orang harus antara 1 hingga 50.');
+                    jumlahInput.focus();
+                }
+            });
+        });
+    </script>
+    
+    {{-- Upload KTP Selfie --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('form-kunjungan');
+            const fotoKTP = document.getElementById('fotoKTP');
+            const fotoSelfie = document.getElementById('fotoSelfie');
+        
+            const errorKTP = document.getElementById('error_ktp');
+            const errorSelfie = document.getElementById('error_selfie');
+        
+            function showError(input, errorDiv, message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                input.classList.add('is-invalid');
+            }
+        
+            function clearError(input, errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+                input.classList.remove('is-invalid');
+            }
+        
+            function validateFile(input, errorDiv, label) {
+                const file = input.files[0];
+                if (!file) return true; // tidak dicek jika belum upload
+        
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+        
+                if (!allowedTypes.includes(file.type)) {
+                    showError(input, errorDiv, label + ' harus berupa JPG, JPEG, atau PNG.');
+                    return false;
+                }
+        
+                if (file.size > maxSize) {
+                    showError(input, errorDiv, label + ' maksimal berukuran 10MB.');
+                    return false;
+                }
+        
+                clearError(input, errorDiv);
+                return true;
+            }
+        
+            fotoKTP.addEventListener('change', () => {
+                validateFile(fotoKTP, errorKTP, 'Foto KTP');
+            });
+        
+            fotoSelfie.addEventListener('change', () => {
+                validateFile(fotoSelfie, errorSelfie, 'Foto Selfie');
+            });
+        
+            form.addEventListener('submit', function (e) {
+                const isKtpValid = validateFile(fotoKTP, errorKTP, 'Foto KTP');
+                const isSelfieValid = validateFile(fotoSelfie, errorSelfie, 'Foto Selfie');
+        
+                if (!isKtpValid) {
+                    e.preventDefault();
+                    fotoKTP.focus();
+                } else if (!isSelfieValid) {
+                    e.preventDefault();
+                    fotoSelfie.focus();
+                }
+            });
+        });
+    </script>
+
+    {{-- Tujuan kunjungan --}}
+    <script>
+        function updateCharCount() {
+            const textarea = document.getElementById('tujuan_kunjungan');
+            const counter = document.getElementById('charCount');
+            const max = 250;
+            const currentLength = textarea.value.length;
+    
+            counter.textContent = 'Sisa karakter: ' + (max - currentLength);
+        }
+    
+        document.addEventListener('DOMContentLoaded', function () {
+            updateCharCount();
+    
+            // Tambahkan trim sebelum submit
+            const form = document.getElementById('form-kunjungan');
+            form.addEventListener('submit', function () {
+                const textarea = document.getElementById('tujuan_kunjungan');
+                textarea.value = textarea.value.trim();
+            });
+        });
+    </script>
+    
+    
+    
 </div>
 
 <script>
