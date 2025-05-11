@@ -37,6 +37,10 @@
    ```
    php artisan migrate:fresh --seed
    ```
+      or for refresh 
+   ```
+   php artisan migrate:refresh --seed
+   ```
 
 ### Push
 1. Make sure your local project is not on **master**. if it on master, change git branch:
