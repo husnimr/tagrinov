@@ -24,7 +24,7 @@ return new class extends Migration
             $table->bigInteger('pendidikan_id')->unsigned(); // FK
             $table->bigInteger('jenis_pengunjung_id')->unsigned(); // FK
             $table->integer('jumlah_orang')->nullable();
-            $table->date('tanggal_kunjungan');
+            $table->dateTime('tanggal_kunjungan');
             $table->text('tujuan_kunjungan');
             $table->string('url_foto_ktp');
             $table->string('url_foto_selfie');

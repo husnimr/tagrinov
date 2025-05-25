@@ -155,130 +155,212 @@
 			width: 30%;
 		}
 	</style>	
-			<table class="table table-bordered">
-				<thead class="table-primary">
-					<tr>
-						<th colspan="2" class="text-center">Detail Permohonan Kunjungan</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-					<th>Nama Lengkap</th>
-					<td>{{ $kunjungan->nama_lengkap }}</td>
-				</tr>
-				<tr>
-					<th>Nomor HP</th>
-					<td>{{ $kunjungan->no_hp }}</td>
-				</tr>
-				<tr>
-					<th>Tanggal Kunjungan</th>
-					<td>{{ $kunjungan->tanggal_kunjungan }}</td>
-				</tr>
-				<tr>
-					<th>Usia</th>
-					<td>{{ $kunjungan->usia->nama }} Tahun</td>
-				</tr>
-				<tr>
-					<th>Jenis Kelamin</th>
-					<td>{{ $kunjungan->jenis_kelamin->nama }}</td>
-				</tr>
-				<tr>
-					<th>Asal Instansi</th>
-					<td>{{ $kunjungan->asal_instansi }}</td>
-				</tr>
-				<tr>
-					<th>Pekerjaan</th>
-					<td>{{ $kunjungan->pekerjaan->nama }}</td>
-				</tr>
-				<tr>
-					<th>Kategori Informasi</th>
-					<td>{{ $kunjungan->kategori_informasi->nama ?? '-' }}</td>
-				</tr> @if($kunjungan->pilihan_pertanian) <tr>
-					<th>Pilihan Pertanian</th>
-					<td>{{ $kunjungan->pilihan_pertanian->nama }}</td>
-				</tr> @endif <tr>
-					<th>Pendidikan</th>
-					<td>{{ $kunjungan->pendidikan->nama }}</td>
-				</tr>
-				<tr>
-					<th>Jenis Pengunjung</th>
-					<td>{{ $kunjungan->jenis_pengunjung->nama }}</td>
-				</tr> @if($kunjungan->jumlah_orang) <tr>
-					<th>Jumlah Orang</th>
-					<td>{{ $kunjungan->jumlah_orang }}</td>
-				</tr> @endif 
-				<tr>
-					<th>Tujuan Kunjungan</th>
-					<td>{{ $kunjungan->tujuan_kunjungan }}</td>
-				</tr>
-				<tr>
-					<th>Foto KTP</th>
-					<td>
-						<img src="{{ asset('storage/' . $kunjungan->url_foto_ktp) }}" alt="Foto KTP" class="img-thumbnail" width="200px" data-bs-toggle="modal" data-bs-target="#ktpModal">
-					</td>
-				</tr>
-				<tr>
-					<th>Foto Selfie</th>
-					<td>
-						<img src="{{ asset('storage/' . $kunjungan->url_foto_selfie) }}" alt="Foto Selfie" class="img-thumbnail" width="200px" data-bs-toggle="modal" data-bs-target="#selfieModal">
-					</td>
-				</tr>
-				<!-- Modal untuk Foto KTP -->
-				<div class="modal fade" id="ktpModal" tabindex="-1" aria-labelledby="ktpModalLabel" aria-hidden="true">
-					<div class="modal-dialog modal-dialog-centered">
-						<div class="modal-content">
-							<div class="modal-header">
-								<h5 class="modal-title" id="ktpModalLabel">Foto KTP</h5>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-							</div>
-							<div class="modal-body text-center">
-								<img src="{{ asset('storage/' . $kunjungan->url_foto_ktp) }}" alt="Foto KTP" class="img-fluid">
-							</div>
+
+	<div class="card rounded-2 p-4 mb-4">
+		<div class="row">
+			{{-- Info Kiri --}}
+			<div class="col-md-6">
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-person-fill me-3 text-primary fs-4"></i>
+					<div>
+						<div class="text-muted small">Nama Lengkap</div>
+						<div class="fw-semibold">{{ $kunjungan->nama_lengkap }}</div>
+					</div>
+				</div>
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-calendar-check-fill me-3 text-success fs-4"></i>
+					<div>
+						<div class="text-muted small">Tanggal Kunjungan</div>
+						<div class="fw-semibold">{{ $kunjungan->tanggal_kunjungan }}</div>
+					</div>
+				</div>
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-telephone-fill me-3 text-info fs-4"></i>
+					<div>
+						<div class="text-muted small">Nomor HP</div>
+						<div class="fw-semibold">{{ $kunjungan->no_hp }}</div>
+					</div>
+				</div>
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-telephone-fill me-3 text-info fs-4"></i>
+					<div>
+						<div class="text-muted small">Usia</div>
+						<div class="fw-semibold">{{ $kunjungan->usia->nama }}</div>
+					</div>
+				</div>
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-gender-ambiguous me-3 text-warning fs-4"></i>
+					<div>
+						<div class="text-muted small">Jenis Kelamin</div>
+						<div class="fw-semibold">{{ $kunjungan->jenis_kelamin->nama }}</div>
+					</div>
+				</div>
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-mortarboard-fill me-3 text-secondary fs-4"></i>
+					<div>
+						<div class="text-muted small">Pendidikan</div>
+						<div class="fw-semibold">{{ $kunjungan->pendidikan->nama }}</div>
+					</div>
+				</div>
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-card-image me-3 text-dark fs-4"></i>
+					<div>
+						<div class="text-muted small">Foto KTP</div>
+						<div class="fw-semibold">
+							<a href="#" data-bs-toggle="modal" data-bs-target="#ktpModal" class="text-decoration-none">Lihat foto</a>
 						</div>
 					</div>
 				</div>
-				<!-- Modal untuk Foto Selfie -->
-				<div class="modal fade" id="selfieModal" tabindex="-1" aria-labelledby="selfieModalLabel" aria-hidden="true">
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-card-image me-3 text-dark fs-4"></i>
+					<div>
+						<div class="text-muted small">Foto Selfie</div>
+						<div class="fw-semibold">
+							<a href="#" data-bs-toggle="modal" data-bs-target="#selfieModal" class="text-decoration-none">Lihat foto</a>
+						</div>
+					</div>
+				</div>
+				<!-- Modal untuk Foto KTP -->
+				<div class="modal fade" id="ktpModal" tabindex="-1" aria-labelledby="ktpModalLabel" aria-hidden="true">
 					<div class="modal-dialog modal-dialog-centered">
-						<div class="modal-content">
+						<div class="modal-content rounded-3">
 							<div class="modal-header">
-								<h5 class="modal-title" id="selfieModalLabel">Foto Selfie</h5>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								<h5 class="modal-title" id="ktpModalLabel">Foto KTP</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
 							</div>
 							<div class="modal-body text-center">
-								<img src="{{ asset('storage/' . $kunjungan->url_foto_selfie) }}" alt="Foto Selfie" class="img-fluid">
+								<img src="{{ asset('storage/' . $kunjungan->url_foto_ktp) }}" alt="Foto KTP" class="img-fluid rounded">
 							</div>
 						</div>
 					</div>
 				</div>
 
+				<!-- Modal untuk Foto Selfie -->
+				<div class="modal fade" id="selfieModal" tabindex="-1" aria-labelledby="selfieModalLabel" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered">
+						<div class="modal-content rounded-3">
+							<div class="modal-header">
+								<h5 class="modal-title" id="selfieModalLabel">Foto Selfie</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+							</div>
+							<div class="modal-body text-center">
+								<img src="{{ asset('storage/' . $kunjungan->url_foto_selfie) }}" alt="Foto Selfie" class="img-fluid rounded">
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			{{-- Info Kanan --}}
+			<div class="col-md-6">
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-building me-3 text-info fs-4"></i>
+					<div>
+						<div class="text-muted small">Asal Instansi</div>
+						<div class="fw-semibold">{{ $kunjungan->asal_instansi }}</div>
+					</div>
+				</div>
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-person-badge-fill me-3 text-danger fs-4"></i>
+					<div>
+						<div class="text-muted small">Pekerjaan</div>
+						<div class="fw-semibold">{{ $kunjungan->pekerjaan->nama }}</div>
+					</div>
+				</div>
+				
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-geo-alt-fill me-3 text-primary fs-4"></i>
+					<div>
+						<div class="text-muted small">Jenis Pengunjung</div>
+						<div class="fw-semibold">{{ $kunjungan->jenis_pengunjung->nama }}</div>
+					</div>
+				</div>
+				@if($kunjungan->jumlah_orang)
+					<div class="mb-3 d-flex align-items-start">
+						<i class="bi bi-people-fill me-3 text-secondary fs-4"></i>
+						<div>
+							<div class="text-muted small">Jumlah</div>
+							<div class="fw-semibold">{{ $kunjungan->jumlah_orang }} Orang</div>
+						</div>
+					</div>
+				@endif
+
+				@if($kunjungan->kategori_informasi)
+					<div class="mb-3 d-flex align-items-start">
+						<i class="bi bi-folder-fill me-3 text-primary fs-4"></i>
+						<div>
+							<div class="text-muted small">Kategori Informasi</div>
+							<div class="fw-semibold">{{ $kunjungan->kategori_informasi->nama }}</div>
+						</div>
+					</div>
+				@endif
+
+				@if($kunjungan->pilihan_pertanian)
+					<div class="mb-3 d-flex align-items-start">
+						<i class="bi bi-collection-fill me-3 text-success fs-4"></i>
+						<div>
+							<div class="text-muted small">Pilihan Pertanian</div>
+							<div class="fw-semibold">{{ $kunjungan->pilihan_pertanian->nama }}</div>
+						</div>
+					</div>
+				@endif
+
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-chat-left-text-fill me-3 text-dark fs-4"></i>
+					<div>
+						<div class="text-muted small">Tujuan Kunjungan</div>
+						<div class="fw-semibold">{{ $kunjungan->tujuan_kunjungan }}</div>
+					</div>
+				</div>
 				@if($kunjungan->status_verifikasi === 'Terverifikasi')
-				<tr>
-					<th>Status Persetujuan</th>
-					<td>
-						@if($kunjungan->status_setujui === 'pending')
-							<span class="badge bg-warning text-white text-capitalize px-3 py-2">
-								Menunggu persetujuan
-							</span>
-						@elseif($kunjungan->status_setujui === 'Disetujui' && $kunjungan->approvedBy && $kunjungan->approved_at)
-							<div class="d-flex align-items-center gap-2">
-								<span class="badge bg-success text-capitalize px-3 py-2">
-									Disetujui
-								</span>
+					<div class="mb-3 d-flex align-items-start">
+						<i class="bi bi-chat-left-text-fill me-3 text-dark fs-4"></i>
+						<div>
+							<div class="text-muted small">Status Persetujuan</div>
+							@if($kunjungan->status_setujui === 'pending')
+								<div class="fw-semibold">
+									<span class="badge bg-warning text-white text-capitalize px-3 py-2">
+										Menunggu Persetujuan
+									</span>
+								</div>
+							@elseif($kunjungan->status_setujui === 'Disetujui' && $kunjungan->approvedBy && $kunjungan->approved_at)
+								<div class="fw-semibold mb-1">
+									<span class="badge bg-success text-capitalize px-3 py-2">
+										Disetujui
+									</span>
+								</div>
 								<div class="text small">
 									oleh <strong>{{ $kunjungan->approvedBy->name }}</strong><br>
-									{{ \Carbon\Carbon::parse($kunjungan->approved_at)
-										->locale('id')
-										->setTimezone('Asia/Jakarta')
-										->translatedFormat('j F Y H:i') }}
+									{{ \Carbon\Carbon::parse($kunjungan->approved_at)->locale('id')->setTimezone('Asia/Jakarta')->translatedFormat('j F Y H:i') }}
 								</div>
-							</div>
-						@endif
-					</td>
-				</tr>
+						    @elseif($kunjungan->status_setujui === 'Ditolak' && $kunjungan->rejectapproveBy && $kunjungan->rejectapprove_at)
+								<div class="fw-semibold mb-1">
+									<span class="badge bg-danger text-capitalize px-3 py-2">
+										Ditolak
+									</span>
+								</div>
+								<div class="text small">
+									oleh <strong>{{ $kunjungan->rejectapproveBy->name }}</strong><br>
+									{{ \Carbon\Carbon::parse($kunjungan->rejectapprove_at)->locale('id')->setTimezone('Asia/Jakarta')->translatedFormat('j F Y H:i') }}
+								</div>
+							@endif
+						</div>
+					</div>
 				@endif
-					
-			</table>
+
+			</div>
+
+		</div>
+	</div>
+
+
 
 				
 </div> 
