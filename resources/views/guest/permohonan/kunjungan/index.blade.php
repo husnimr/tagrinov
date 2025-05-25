@@ -247,14 +247,43 @@
 
 
 
-        <!-- Tanggal Kunjungan -->
+        <!-- Tanggal & Jam Kunjungan (Berdampingan) -->
         <div class="mb-3">
-            <label for="tanggal_kunjungan" class="form-label">Tanggal Kunjungan</label>
-            <input type="date" class="form-control @error('tanggal_kunjungan') is-invalid @enderror" id="tanggal_kunjungan" value="{{ old('tanggal_kunjungan') }}" name="tanggal_kunjungan" required>
-            @error('tanggal_kunjungan')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+            <label class="form-label">Tanggal & Jam Kunjungan</label>
+            <div class="row">
+                <!-- Tanggal -->
+                <div class="col-md-6">
+                    <input type="date" class="form-control @error('tanggal_kunjungan_date') is-invalid @enderror"
+                        id="tanggal_kunjungan_date" name="tanggal_kunjungan_date"
+                        value="{{ old('tanggal_kunjungan_date') }}" min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}" required>
+                    @error('tanggal_kunjungan_date')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Jam -->
+                <div class="col-md-6">
+                    <select class="form-select @error('tanggal_kunjungan_time') is-invalid @enderror"
+                            id="tanggal_kunjungan_time" name="tanggal_kunjungan_time" required>
+                        <option value="">-- Pilih Jam --</option>
+                        @for ($hour = 8; $hour <= 15; $hour++)
+                            @php
+                                $time = sprintf('%02d:00', $hour);
+                            @endphp
+                            <option value="{{ $time }}" {{ old('tanggal_kunjungan_time') == $time ? 'selected' : '' }}>
+                                {{ $time }}
+                            </option>
+                        @endfor
+                    </select>
+                    @error('tanggal_kunjungan_time')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
         </div>
+
+
+
 
         <!-- Tujuan Kunjungan -->
         <div class="mb-3">
@@ -271,7 +300,7 @@
         <!-- Unggah Foto KTP -->
         <div class="file-input-container">
             <label for="fotoKTP" class="form-label">Unggah Foto KTP </label>
-            <input type="file" class="form-control @error('url_foto_ktp') is-invalid @enderror" id="fotoKTP" name="url_foto_ktp" accept="image/*" capture="environment" required>
+            <input type="file" class="form-control @error('url_foto_ktp') is-invalid @enderror" id="fotoKTP" name="url_foto_ktp" accept=".jpg,.jpeg,.png" capture="environment" required>
             <small class="text-muted">Format: JPG, JPEG, PNG. Maks: 10MB.</small>
             @error('url_foto_ktp')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -295,6 +324,7 @@
             <button type="submit" class="btn btn-success">Kirim Permohonan</button>
         </div>
     </form>
+</div>
 
     {{-- Nomor HP --}}
     <script>
@@ -431,47 +461,69 @@
     {{-- Jumlah orang --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const jumlahInput = document.getElementById('jumlah_orang_input');
-            const jumlahError = document.getElementById('jumlah_orang_error');
-            const form = document.getElementById('form-kunjungan');
-    
-            function showJumlahError(message) {
-                jumlahError.textContent = message;
-                jumlahError.style.display = 'block';
-                jumlahInput.classList.add('is-invalid');
+        const jumlahInput = document.getElementById('jumlah_orang_input');
+        const jumlahError = document.getElementById('jumlah_orang_error');
+        const form = document.getElementById('form-kunjungan');
+        const jenisSelect = document.getElementById('jenis_pengunjung'); // ID select jenis pengunjung
+
+        function showJumlahError(message) {
+            jumlahError.textContent = message;
+            jumlahError.style.display = 'block';
+            jumlahInput.classList.add('is-invalid');
+        }
+
+        function clearJumlahError() {
+            jumlahError.textContent = '';
+            jumlahError.style.display = 'none';
+            jumlahInput.classList.remove('is-invalid');
+        }
+
+        jumlahInput.addEventListener('input', function () {
+            // Batasi hanya 2 digit angka
+            if (this.value.length > 2) {
+                this.value = this.value.slice(0, 2);
             }
-    
-            function clearJumlahError() {
-                jumlahError.textContent = '';
-                jumlahError.style.display = 'none';
-                jumlahInput.classList.remove('is-invalid');
+
+            const val = parseInt(this.value);
+
+            if (val > 50) {
+                showJumlahError('Jumlah orang maksimal 50.');
+            } else {
+                clearJumlahError();
             }
-    
-            jumlahInput.addEventListener('input', function () {
-                // Batasi hanya 2 digit angka
-                if (this.value.length > 2) {
-                    this.value = this.value.slice(0, 2);
-                }
-    
-                const val = parseInt(this.value);
-    
-                if (val > 50) {
-                    showJumlahError('Jumlah orang maksimal 50.');
-                } else {
-                    clearJumlahError();
-                }
-            });
-    
-            form.addEventListener('submit', function (e) {
-                const val = parseInt(jumlahInput.value);
-    
+        });
+
+        form.addEventListener('submit', function (e) {
+            const jenis = jenisSelect.value;
+            const val = parseInt(jumlahInput.value);
+
+            // Hanya validasi jumlah orang jika pengunjung perkelompok
+            if (jenis.toLowerCase() === 'Perkelompok') {
                 if (isNaN(val) || val < 1 || val > 50) {
                     e.preventDefault();
                     showJumlahError('Jumlah orang harus antara 1 hingga 50.');
                     jumlahInput.focus();
                 }
-            });
+            } else {
+                // Perorangan, clear error
+                clearJumlahError();
+            }
         });
+
+        // Optional: Sembunyikan field jumlah jika perorangan
+        jenisSelect.addEventListener('change', function () {
+            if (this.value.toLowerCase() === 'Perorangan') {
+                jumlahInput.value = '';
+                clearJumlahError();
+                document.getElementById('jumlah_orang_container').style.display = 'none';
+            } else {
+                document.getElementById('jumlah_orang_container').style.display = 'block';
+            }
+        });
+
+        // Trigger on load
+        jenisSelect.dispatchEvent(new Event('change'));
+    });
     </script>
     
     {{-- Upload KTP Selfie --}}
@@ -564,103 +616,107 @@
     </script>
     
     
-    
-</div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Menangani tampilan input jumlah orang berdasarkan jenis pengunjung
-        var jenisPengunjungRadios = document.querySelectorAll('input[name="jenis_pengunjung_id"]');
-        var jumlahOrangContainer = document.getElementById('jumlah_orang');
+document.addEventListener('DOMContentLoaded', function () {
+    const kategoriSelect = document.getElementById('kategori_informasi');
+    const pilihanPertanianContainer = document.getElementById('pilihanPertanianContainer');
+    const pilihanPertanianRadios = document.querySelectorAll('input[name="pilihan_pertanian"]');
+    const jenisRadios = document.querySelectorAll('input[name="jenis_pengunjung_id"]');
+    const jumlahOrangContainer = document.getElementById('jumlah_orang');
+    const jumlahOrangInput = jumlahOrangContainer ? jumlahOrangContainer.querySelector('input') : null;
 
-        jenisPengunjungRadios.forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                if (this.value === 'Perkelompok') {
-                    jumlahOrangContainer.style.display = 'block';
-                    jumlahOrangContainer.querySelector('input').setAttribute('required', 'required');
-                } else {
-                    jumlahOrangContainer.style.display = 'none';
-                    jumlahOrangContainer.querySelector('input').removeAttribute('required');
-                    jumlahOrangContainer.querySelector('input').value = ''; // Reset nilai input
-                }
+    // Fungsi untuk handle tampilan pilihan pertanian
+    function updatePilihanPertanian() {
+        if (kategoriSelect && kategoriSelect.value === '1') {
+            pilihanPertanianContainer.style.display = 'block';
+            pilihanPertanianRadios.forEach(r => r.required = true);
+        } else {
+            pilihanPertanianContainer.style.display = 'none';
+            pilihanPertanianRadios.forEach(r => {
+                r.required = false;
+                r.checked = false;
             });
-        });
-
-        // Menangani tampilan pilihan tambahan untuk kategori informasi publik Pertanian
-        var kategoriInformasiSelect = document.getElementById('kategori_informasi');
-        var pilihanPertanianContainer = document.getElementById('pilihanPertanianContainer');
-        pilihanPertanianContainer.style.display = 'none'; // Sembunyikan secara default
-
-        kategoriInformasiSelect.addEventListener('change', function () {
-            if (this.value == '1') { // Gantilah '1' dengan ID kategori Pertanian yang sesuai
-                pilihanPertanianContainer.style.display = 'block';
-                var pilihanRadios = document.querySelectorAll('input[name="pilihan_pertanian"]');
-                pilihanRadios.forEach(function (radio) {
-                    radio.setAttribute('required', 'required');
-                });
-            } else {
-                pilihanPertanianContainer.style.display = 'none';
-                var pilihanRadios = document.querySelectorAll('input[name="pilihan_pertanian"]');
-                pilihanRadios.forEach(function (radio) {
-                    radio.removeAttribute('required');
-                    radio.checked = false; // Reset pilihan radio
-                });
-            }
-        });
-
-        // Memastikan tampilan yang benar pada load awal
-        jenisPengunjungRadios.forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                if (this.value === '2') { // Gantilah '2' dengan ID yang sesuai untuk Perkelompok
-                    jumlahOrangContainer.style.display = 'block';
-                    jumlahOrangContainer.querySelector('input').setAttribute('required', 'required');
-                } else {
-                    jumlahOrangContainer.style.display = 'none';
-                    jumlahOrangContainer.querySelector('input').removeAttribute('required');
-                    jumlahOrangContainer.querySelector('input').value = ''; // Reset nilai input
-                }
-            });
-        });
-
-        // Memastikan tampilan yang benar pada load awal
-        jenisPengunjungRadios.forEach(function (radio) {
-            if (radio.checked && radio.value === '2') { // Gantilah '2' dengan ID yang sesuai untuk Perkelompok
-                jumlahOrangContainer.style.display = 'block';
-            } else {
-                jumlahOrangContainer.style.display = 'none';
-            }
-        });
-    });
-    
-
-    // Fungsi Tanggal
-    const dateInput = document.getElementById('tanggal_kunjungan');
-
-    // Mendapatkan tanggal hari ini
-    const today = new Date();
-    const todayISO = today.toISOString().split('T')[0];
-
-    // Mengatur tanggal minimum sebagai besok
-    today.setDate(today.getDate() + 1);
-    const minDate = today.toISOString().split('T')[0];
-    dateInput.setAttribute('min', minDate);
-
-    // Fungsi untuk memeriksa apakah hari Sabtu atau Minggu
-    function isWeekend(date) {
-        const day = new Date(date).getDay();
-        return (day === 6 || day === 0); // 6 = Sabtu, 0 = Minggu
+        }
     }
 
-    // Event listener untuk memblokir Sabtu, Minggu, dan hari ini
-    dateInput.addEventListener('input', function() {
-        const selectedDate = this.value;
-
-        // Jika hari Sabtu atau Minggu, reset value dan tampilkan alert
-        if (isWeekend(selectedDate)) {
-            alert('Kunjungan tidak dapat dilakukan pada hari Sabtu atau Minggu.');
-            this.value = '';
+    // Fungsi untuk handle tampilan input jumlah orang
+    function updateJumlahOrang() {
+        const selected = [...jenisRadios].find(r => r.checked);
+        if (selected && selected.value === '2') {
+            jumlahOrangContainer.style.display = 'block';
+            if (jumlahOrangInput) jumlahOrangInput.required = true;
+        } else {
+            jumlahOrangContainer.style.display = 'none';
+            if (jumlahOrangInput) {
+                jumlahOrangInput.required = false;
+                jumlahOrangInput.value = '';
+            }
         }
+    }
+
+    // Inisialisasi saat halaman load
+    updatePilihanPertanian();
+    updateJumlahOrang();
+
+    // Event listener
+    if (kategoriSelect) {
+        kategoriSelect.addEventListener('change', updatePilihanPertanian);
+    }
+
+    jenisRadios.forEach(r => {
+        r.addEventListener('change', updateJumlahOrang);
     });
+});
+</script>
+
+<script>
+document.getElementById('tanggal_kunjungan_date').addEventListener('change', function() {
+    const selectedDate = new Date(this.value);
+    const day = selectedDate.getDay(); // 0 = Minggu, 6 = Sabtu
+
+    if(day === 0 || day === 6){
+        alert('Kunjungan tidak tersedia pada hari Sabtu dan Minggu. Silakan pilih hari lain.');
+        this.value = ''; // reset tanggal
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function () {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            const maxSize = 10 * 1024 * 1024; // 10 MB
+
+            for (let file of this.files) {
+                if (!allowedTypes.includes(file.type)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File Tidak Valid',
+                        text: 'File hanya mendukung format: jpg, jpeg, png.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    this.value = ''; // Clear the invalid file
+                    break;
+                }
+
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ukuran File Terlalu Besar',
+                        text: 'Ukuran file maksimal 10MB.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    this.value = ''; // Clear the file
+                    break;
+                }
+            }
+        });
+    });
+});
 </script>
 
 

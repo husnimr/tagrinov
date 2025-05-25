@@ -54,13 +54,6 @@ class KunjunganDiterima extends Mailable
     /**
      * Get the message content definition.
      */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.kunjungan_diterima', // Sesuaikan dengan lokasi view yang benar
-            with: ['kunjungan' => $this->kunjungan] // Kirim data kunjungan ke view
-        );
-    }
 
     /**
      * Get the attachments for the message.

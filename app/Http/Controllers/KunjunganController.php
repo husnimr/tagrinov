@@ -59,7 +59,7 @@ class KunjunganController extends Controller
             return back()->with('error', 'Data kunjungan tidak ditemukan.');
         }
     
-        $kunjungan->tanggal_kunjungan = Carbon::parse($kunjungan->tanggal_kunjungan)->locale('id')->translatedFormat('l, d F Y');
+        $kunjungan->tanggal_kunjungan = Carbon::parse($kunjungan->tanggal_kunjungan)->locale('id')->translatedFormat('l, d F Y H:i');
         return view('admin.kunjungan.detail', compact('kunjungan'));
     }
 
@@ -68,7 +68,7 @@ class KunjunganController extends Controller
         // Validasi input dari pengguna
         $validatedData = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
-            'no_hp' => 'required|string|max:15',
+            'no_hp' => 'required|starts_with:08|digits_between:11,13',
             'usia_id' => 'required|string',
             'jenis_kelamin_id' => 'required|string',
             'asal_instansi' => 'required|string|max:100|regex:/^[a-zA-Z0-9\s]+$/',
@@ -78,7 +78,27 @@ class KunjunganController extends Controller
             'pendidikan_id' => 'required|string',
             'jenis_pengunjung_id' => 'required|string',
             'jumlah_orang' => 'nullable|integer|min:2',
-            'tanggal_kunjungan' => 'required|date',
+            'tanggal_kunjungan_date' => 'required|date',
+            'tanggal_kunjungan_time' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->filled('tanggal_kunjungan_date')) {
+                        $datetime = Carbon::createFromFormat('Y-m-d H:i', $request->tanggal_kunjungan_date . ' ' . $value);
+
+                        // Validasi jam antara 08:00 sampai 15:00
+                        $jam = (int)$datetime->format('H');
+                        if ($jam < 8 || $jam > 15) {
+                            $fail('Jam kunjungan harus antara pukul 08:00 sampai 15:00.');
+                        }
+
+                        // Cek apakah waktu yang sama sudah digunakan
+                        if (Kunjungan::where('tanggal_kunjungan', $datetime)->exists()) {
+                            $fail('Tanggal dan jam kunjungan ini sudah terpakai. Silakan pilih waktu lain.');
+                        }
+                    }
+                }
+            ],
             'tujuan_kunjungan' => 'required|string|max:250',
             'url_foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:10240',
             'url_foto_selfie' => 'required|image|mimes:jpeg,png,jpg|max:10240',
@@ -95,8 +115,12 @@ class KunjunganController extends Controller
             'url_foto_selfie.mimes' => 'Foto selfie harus berformat jpeg, png, atau jpg.',
             'url_foto_selfie.max' => 'Ukuran foto selfie tidak boleh lebih dari 10MB.',
 
-            'tanggal_kunjungan.unique' => 'Tanggal kunjungan ini sudah terdaftar, silakan pilih tanggal lain.'
+            'tanggal_kunjungan_date.required' => 'Tanggal kunjungan wajib diisi.',
+            'tanggal_kunjungan_time.required' => 'Jam kunjungan wajib diisi.',
         ]);
+
+        // Gabungkan tanggal dan jam kunjungan jadi satu datetime
+         $tanggal_kunjungan = Carbon::createFromFormat('Y-m-d H:i', $request->tanggal_kunjungan_date . ' ' . $request->tanggal_kunjungan_time);
 
         // Jika validasi gagal, redirect kembali dengan input yang benar tetap terisi
         if (!$validatedData) {
@@ -130,7 +154,7 @@ class KunjunganController extends Controller
             'pendidikan_id' => $request->pendidikan_id,
             'jenis_pengunjung_id' => $request->jenis_pengunjung_id,
             'jumlah_orang' => $request->jumlah_orang ?: null,
-            'tanggal_kunjungan' => $request->tanggal_kunjungan,
+            'tanggal_kunjungan' => $tanggal_kunjungan,
             'tujuan_kunjungan' => $request->tujuan_kunjungan,
             'url_foto_ktp' => $url_foto_ktp,
             'url_foto_selfie' => $url_foto_selfie,
@@ -277,6 +301,7 @@ class KunjunganController extends Controller
     
         // Jika belum disetujui, maka bisa dibatalkan
         $kunjungan->status_verifikasi = 'Belum Diverifikasi';
+        $kunjungan->status_setujui = 'pending';
         $kunjungan->save();
     
         return back()->with('success', 'Verifikasi kunjungan telah dibatalkan.');
