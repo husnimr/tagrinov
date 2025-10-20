@@ -121,7 +121,8 @@
         <!-- Nama Lengkap -->
         <div class="mb-3">
             <label for="namaLengkap" class="form-label">Nama Lengkap</label>
-            <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" placeholder="Nama Lengkap" value="{{ old('nama_lengkap') }}" required>
+            <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" placeholder="Nama Lengkap" value="{{ old('nama_lengkap') }}" required
+            pattern="[A-Za-z\s]+">
         </div>
 
         <!-- No HP -->
@@ -325,7 +326,12 @@
         </div>
     </form>
 </div>
-
+    {{-- Nama lengkap --}}
+    <script>
+        document.getElementById('nama_lengkap').addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+        });
+    </script>
     {{-- Nomor HP --}}
     <script>
         const form = document.getElementById('form-kunjungan');
@@ -461,70 +467,102 @@
     {{-- Jumlah orang --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-        const jumlahInput = document.getElementById('jumlah_orang_input');
-        const jumlahError = document.getElementById('jumlah_orang_error');
-        const form = document.getElementById('form-kunjungan');
-        const jenisSelect = document.getElementById('jenis_pengunjung'); // ID select jenis pengunjung
+            const jumlahInput = document.getElementById('jumlah_orang_input');
+            const jumlahError = document.getElementById('jumlah_orang_error');
+            const form = document.getElementById('form-kunjungan');
+            const jenisSelect = document.getElementById('jenis_pengunjung');
 
-        function showJumlahError(message) {
-            jumlahError.textContent = message;
-            jumlahError.style.display = 'block';
-            jumlahInput.classList.add('is-invalid');
-        }
-
-        function clearJumlahError() {
-            jumlahError.textContent = '';
-            jumlahError.style.display = 'none';
-            jumlahInput.classList.remove('is-invalid');
-        }
-
-        jumlahInput.addEventListener('input', function () {
-            // Batasi hanya 2 digit angka
-            if (this.value.length > 2) {
-                this.value = this.value.slice(0, 2);
+            function showJumlahError(message) {
+                jumlahError.textContent = message;
+                jumlahError.style.display = 'block';
+                jumlahInput.classList.add('is-invalid');
             }
 
-            const val = parseInt(this.value);
-
-            if (val > 50) {
-                showJumlahError('Jumlah orang maksimal 50.');
-            } else {
-                clearJumlahError();
+            function clearJumlahError() {
+                jumlahError.textContent = '';
+                jumlahError.style.display = 'none';
+                jumlahInput.classList.remove('is-invalid');
             }
-        });
 
-        form.addEventListener('submit', function (e) {
-            const jenis = jenisSelect.value;
-            const val = parseInt(jumlahInput.value);
-
-            // Hanya validasi jumlah orang jika pengunjung perkelompok
-            if (jenis.toLowerCase() === 'Perkelompok') {
-                if (isNaN(val) || val < 1 || val > 50) {
+            // Blokir input karakter negatif dan 'e'
+            jumlahInput.addEventListener('keydown', function (e) {
+                if (e.key === '-' || e.key === 'e') {
                     e.preventDefault();
-                    showJumlahError('Jumlah orang harus antara 1 hingga 50.');
-                    jumlahInput.focus();
                 }
-            } else {
-                // Perorangan, clear error
-                clearJumlahError();
-            }
-        });
+            });
 
-        // Optional: Sembunyikan field jumlah jika perorangan
-        jenisSelect.addEventListener('change', function () {
-            if (this.value.toLowerCase() === 'Perorangan') {
-                jumlahInput.value = '';
-                clearJumlahError();
-                document.getElementById('jumlah_orang_container').style.display = 'none';
-            } else {
-                document.getElementById('jumlah_orang_container').style.display = 'block';
-            }
-        });
+            jumlahInput.addEventListener('input', function () {
+                let val = this.value;
 
-        // Trigger on load
-        jenisSelect.dispatchEvent(new Event('change'));
-    });
+                // Hanya izinkan maksimal 2 digit
+                if (val.length > 2) {
+                    val = val.slice(0, 2);
+                    this.value = val;
+                }
+
+                // Cek jika diawali 0
+                if (val === '0') {
+                    showJumlahError('Jumlah orang minimal 2 orang.');
+                    return;
+                }
+
+                // Cegah jika dimulai dengan 0 dan dilanjutkan (misalnya 01, 09)
+                if (val.length > 1 && val.startsWith('0')) {
+                    this.value = val.slice(0, 1); // potong kembali ke 0
+                    return;
+                }
+
+                const number = parseInt(val);
+
+                if (isNaN(number)) {
+                    clearJumlahError();
+                    return;
+                }
+
+                if (number === 1) {
+                    showJumlahError('Jumlah orang minimal 2 orang.');
+                } else if (number > 50) {
+                    showJumlahError('Jumlah orang maksimal 50.');
+                } else {
+                    clearJumlahError();
+                }
+            });
+
+            form.addEventListener('submit', function (e) {
+                const jenis = jenisSelect.value.toLowerCase();
+                const val = parseInt(jumlahInput.value);
+
+                if (jenis === 'perkelompok') {
+                    if (isNaN(val) || val < 2 || val > 50) {
+                        e.preventDefault();
+                        if (val === 0 || val === 1) {
+                            showJumlahError('Jumlah orang minimal 2 orang.');
+                        } else if (val > 50) {
+                            showJumlahError('Jumlah orang maksimal 50.');
+                        } else {
+                            showJumlahError('Jumlah orang tidak valid.');
+                        }
+                        jumlahInput.focus();
+                    }
+                } else {
+                    clearJumlahError();
+                }
+            });
+
+            jenisSelect.addEventListener('change', function () {
+                if (this.value.toLowerCase() === 'perorangan') {
+                    jumlahInput.value = '';
+                    clearJumlahError();
+                    document.getElementById('jumlah_orang_container').style.display = 'none';
+                } else {
+                    document.getElementById('jumlah_orang_container').style.display = 'block';
+                }
+            });
+
+            jenisSelect.dispatchEvent(new Event('change'));
+        });
     </script>
+
     
     {{-- Upload KTP Selfie --}}
     <script>
@@ -696,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     Swal.fire({
                         icon: 'error',
                         title: 'File Tidak Valid',
-                        text: 'File hanya mendukung format: jpg, jpeg, png.',
+                        text: 'File hanya mendukung format: JPG, JPEG, PNG.',
                         confirmButtonColor: '#dc3545'
                     });
                     this.value = ''; // Clear the invalid file
