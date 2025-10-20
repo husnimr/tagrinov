@@ -42,9 +42,9 @@
 
 
 	<div class="d-flex flex-wrap gap-2 mb-3">
-		<a href="https://wa.me/{{ preg_replace('/\D/', '', $kunjungan->no_hp) }}" target="_blank" class="btn btn-success">
+		<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#whatsappModal">
 			<i class="fab fa-whatsapp"></i> Hubungi
-		</a>
+		</button>
 	
 		@if($kunjungan->status_verifikasi === 'Terverifikasi')
 			<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelVerificationModal">
@@ -63,7 +63,61 @@
 			</button>
 		@endif
 	</div>
-	
+
+	<!-- Modal -->
+	<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<form id="whatsappForm">
+			<div class="modal-content">
+				<div class="modal-header bg-success text-white">
+				<h5 class="modal-title" id="whatsappModalLabel">Hubungi</h5>
+				<button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label for="pesanWhatsapp" class="form-label">Masukkan Alasan atau Pesan</label>
+						<textarea class="form-control" id="pesanWhatsapp" rows="6" placeholder="Contoh: Kami ingin konfirmasi jadwal kunjungan..."></textarea>
+					</div>
+					<p class="text-muted mb-0" style="font-size: 0.875rem;">
+						Pesan ini akan dikirim melalui WhatsApp Web. Pastikan WhatsApp Web sudah terbuka dan Anda sudah login.
+					</p>
+				</div>
+				<div class="modal-footer">
+				<button type="submit" class="btn btn-success">Lanjut ke WhatsApp</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+	@php
+		use Illuminate\Support\Str;
+
+		$noHp = preg_replace('/\D/', '', $kunjungan->no_hp);
+		if (Str::startsWith($noHp, '0')) {
+			$noHp = '62' . substr($noHp, 1);
+		}
+	@endphp
+
+	<script>
+		document.getElementById('whatsappForm').addEventListener('submit', function(e) {
+			e.preventDefault();
+
+			const pesan = document.getElementById('pesanWhatsapp').value.trim();
+			if (!pesan) {
+				alert('Pesan tidak boleh kosong!');
+				return;
+			}
+
+			const noHp = "{{ $noHp }}";
+			const encodedMessage = encodeURIComponent(pesan);
+			const url = `https://web.whatsapp.com/send?phone=${noHp}&text=${encodedMessage}`;
+
+			// Langsung buka di tab baru ke WhatsApp Web
+			window.open(url, '_blank');
+		});
+	</script>
+
+
 	<!-- Modal Konfirmasi Verifikasi -->
 	<div class="modal fade" id="confirmVerificationModal" tabindex="-1" aria-labelledby="confirmVerificationModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
@@ -160,6 +214,13 @@
 		<div class="row">
 			{{-- Info Kiri --}}
 			<div class="col-md-6">
+				<div class="mb-3 d-flex align-items-start">
+					<i class="bi bi-person-fill me-3 text-primary fs-4"></i>
+					<div>
+						<div class="text-muted small">Nomor Permohonan</div>
+						<div class="fw-semibold">{{ $kunjungan->nomor_permohonan }}</div>
+					</div>
+				</div>
 				<div class="mb-3 d-flex align-items-start">
 					<i class="bi bi-person-fill me-3 text-primary fs-4"></i>
 					<div>

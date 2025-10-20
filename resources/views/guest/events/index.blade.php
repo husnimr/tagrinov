@@ -147,7 +147,7 @@
                     <div id="modalJumlah" class="mb-3 d-flex align-items-start" style="display: none;">
                         <i class="bi bi-person-lines-fill me-3 text-danger"></i>
                         <div>
-                            <div class="text-muted small">Jumlah Orang</div> <!-- ini akan ikut disembunyikan -->
+                            <div class="text-muted small">Jumlah Orang</div> 
                             <div id="modalJumlahOrang" class="fw-semibold"></div>
                         </div>
                     </div>

@@ -35,6 +35,7 @@ class KunjunganController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%$search%")
+                  ->orWhere('nomor_permohonan', 'like', "%$search%")
                   ->orWhere('tanggal_kunjungan', 'like', "%$search%")
                   ->orWhere('asal_instansi', 'like', "%$search%")
                   ->orWhere('no_hp', 'like', "%$search%") 
@@ -163,6 +164,13 @@ class KunjunganController extends Controller
         
         // Periksa apakah data berhasil disimpan
         if ($kunjungan) {
+            $tanggal = Carbon::now()->format('Ymd');
+            $prefix = 'PK-' . $tanggal;
+            $countToday = Kunjungan::whereDate('created_at', Carbon::today())->count();
+            $nomorUrut = str_pad($countToday, 3, '0', STR_PAD_LEFT);
+            $nomorPermohonan = $prefix . $nomorUrut;
+            $kunjungan->nomor_permohonan = $nomorPermohonan;
+            $kunjungan->save();
             // Ambil email user yang rolenya admin
             $adminUsers = User::where('role', 'admin')->pluck('email');
         
@@ -327,6 +335,7 @@ class KunjunganController extends Controller
             if ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nama_lengkap', 'like', "%$search%")
+                      ->orWhere('nomor_permohonan', 'like', "%$search%")
                       ->orWhere('tanggal_kunjungan', 'like', "%$search%")
                       ->orWhere('asal_instansi', 'like', "%$search%")
                       ->orWhere('no_hp', 'like', "%$search%") 
@@ -410,7 +419,7 @@ class KunjunganController extends Controller
         $kunjungan = Kunjungan::all();
     
         $pdf = Pdf::loadView('export-pdf', compact('kunjungan'))
-                ->setPaper('a4', 'landscape');
+                ->setPaper('legal', 'landscape');
     
         return $pdf->download("Data-Kunjungan-{$tanggal}.pdf");
     }

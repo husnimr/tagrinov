@@ -134,7 +134,7 @@ class ManageAccountController extends Controller
     
         // Cek apakah password yang dimasukkan cocok dengan password user yang login
         if (!Hash::check($request->password, auth()->user()->password)) {
-            return back()->with('error', 'Password salah! Coba lagi.');
+            return back()->with('error', 'Gagal menghapus akun! Password salah.');
         }
     
         // Hapus akun jika password benar

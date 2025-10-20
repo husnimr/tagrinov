@@ -37,9 +37,9 @@
         <thead class="table-primary">
             <tr>
                 <th>No</th>
+                <th>No. Permohonan</th>
                 <th>Nama Lengkap</th>
                 <th>Tanggal Kunjungan</th>
-                <th>Nomor HP</th>
                 <th>Asal Instansi</th>
                 <th>Jenis</th>
                 <th>Status</th>
@@ -57,9 +57,9 @@
                 @foreach($kunjungan as $index => $item)
                     <tr>
                         <td>{{ ($kunjungan->currentPage() - 1) * $kunjungan->perPage() + $index + 1 }}</td>
+                        <td>{{ $item->nomor_permohonan }}</td>
                         <td>{{ $item->nama_lengkap }}</td>
                         <td>{{ \Carbon\Carbon::parse($item->tanggal_kunjungan)->locale('id')->translatedFormat('l, d F Y') }}</td>
-                        <td>{{ $item->no_hp }}</td>
                         <td>{{ $item->asal_instansi }}</td>
                         <td>{{ $item->jenis_pengunjung->nama }}</td>
                         <td>
