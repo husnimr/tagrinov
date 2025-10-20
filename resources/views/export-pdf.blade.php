@@ -18,6 +18,7 @@
         <thead>
             <tr>
                 <th>No</th>
+                <th>No. Permohonan</th>
                 <th>Nama Lengkap</th>
                 <th>Tanggal Kunjungan</th>
                 <th>Nomor HP</th>
@@ -38,6 +39,7 @@
             @foreach($kunjungan as $key => $item)
                 <tr>
                     <td>{{ $key + 1 }}</td>
+                    <td>{{ $item->nomor_permohonan}}</td>
                     <td>{{ $item->nama_lengkap }}</td>
                     <td>{{ \Carbon\Carbon::parse($item->tanggal_kunjungan)->locale('id')->translatedFormat('d F Y') }}</td>
                     <td>{{ $item->no_hp }}</td>

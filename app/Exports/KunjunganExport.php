@@ -27,6 +27,7 @@ class KunjunganExport implements FromCollection, WithHeadings, WithColumnWidths,
         ])->get()->map(function ($item, $index) use ($baseUrl) {
             return [
                 'nomor' => $index + 1,
+                'nomor_permohonan' => $item->nomor_permohonan,
                 'nama_lengkap' => $item->nama_lengkap,
                 'tanggal_kunjungan' => Carbon::parse($item->tanggal_kunjungan)->locale('id')->translatedFormat('d F Y'),
                 'no_hp' => $item->no_hp,
@@ -63,6 +64,7 @@ class KunjunganExport implements FromCollection, WithHeadings, WithColumnWidths,
             ["Data Kunjungan Per $tanggal"], // Judul di atas header
             [
                 "No",
+                "Nomor Permohonan",
                 "Nama Lengkap",
                 "Tanggal Kunjungan",
                 "No HP",
@@ -92,22 +94,23 @@ class KunjunganExport implements FromCollection, WithHeadings, WithColumnWidths,
     {
         return [
             'A' => 5,   // ID
-            'B' => 25,  // Nama Lengkap
-            'C' => 15,  // Tanggal Kunjungan
-            'D' => 15,  // No HP
-            'E' => 10,  // Usia
-            'F' => 15,  // Jenis Kelamin
-            'G' => 25,  // Asal Instansi
-            'H' => 20,  // Pekerjaan
-            'I' => 25,  // Kategori Informasi
-            'J' => 20,  // Pilihan Pertanian
-            'K' => 20,  // Pendidikan
-            'L' => 20,  // Jenis Pengunjung
-            'M' => 15,  // Jumlah Orang
-            'N' => 30,  // Tujuan Kunjungan
-            'O' => 10,  // Foto KTP
-            'P' => 10,  // Foto Selfie
-            'Q' => 15,  // Status
+            'B' => 25,  // Nomor Permohonan
+            'C' => 25,  // Nama Lengkap
+            'D' => 15,  // Tanggal Kunjungan
+            'E' => 15,  // No HP
+            'F' => 10,  // Usia
+            'G' => 15,  // Jenis Kelamin
+            'H' => 25,  // Asal Instansi
+            'I' => 20,  // Pekerjaan
+            'J' => 25,  // Kategori Informasi
+            'K' => 20,  // Pilihan Pertanian
+            'L' => 20,  // Pendidikan
+            'M' => 20,  // Jenis Pengunjung
+            'N' => 15,  // Jumlah Orang
+            'O' => 30,  // Tujuan Kunjungan
+            'P' => 10,  // Foto KTP
+            'Q' => 10,  // Foto Selfie
+            'R' => 15,  // Status
         ];
     }
 
